@@ -21,17 +21,17 @@ export default function Header() {
         </form>
         <ul className="flex gap-5">
           <Link to="/">
-            <li className="hidden sm:inline text-md text-orange-900 font-semibold hover:underline cursor-pointer">
+            <li className="hidden sm:inline text-md font-medium text-orange-900  hover:underline hover:font-semibold cursor-pointer">
               Home
             </li>
           </Link>
           <Link to="/about">
-            <li className="hidden sm:inline text-md text-orange-900 font-semibold hover:underline cursor-pointer">
+            <li className="hidden sm:inline text-md font-medium text-orange-900 hover:underline hover:font-semibold cursor-pointer">
               About
             </li>
           </Link>
           <Link to="/sign-in">
-            <li className="text-md text-orange-900 font-semibold hover:underline cursor-pointer">
+            <li className="text-md font-medium text-orange-900 hover:underline hover:font-semibold cursor-pointer">
               Sign in
             </li>
           </Link>
