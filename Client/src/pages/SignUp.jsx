@@ -1,25 +1,30 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import OAuth from "../components/OAuth";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  signInExecution,
+  signUpSuccess,
+  signInFailed,
+} from "../redux/user/userSlice";
 
 export default function SignUp() {
   const [inputValues, setInputValues] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const { isLoading, error } = useSelector((state) => state.user);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const inputHandler = (e) => {
     setInputValues({
       ...inputValues,
       [e.target.id]: e.target.value,
     });
-    console.log(inputValues);
   };
 
   const submitHandler = async (e) => {
     e.preventDefault();
     try {
-      setIsLoading(true);
+      dispatch(signInExecution());
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: {
@@ -28,28 +33,26 @@ export default function SignUp() {
         body: JSON.stringify(inputValues),
       });
       const data = await res.json();
-      console.log(data);
+
       if (data.success === false) {
-        setIsLoading(false);
-        setError(data.message);
+        dispatch(signInFailed(data.message));
         return;
       }
-      setError(null);
-      setIsLoading(false);
+      dispatch(signUpSuccess());
       navigate("/signin");
     } catch (error) {
-      setIsLoading(false);
+      dispatch(signInFailed(error));
     }
   };
 
   return (
     <div className="p-3 max-w-lg mx-auto">
-      <h1 className="text-3xl text-center font-medium	 uppercase my-6 text-orange-500">
+      <h1 className="text-3xl text-center font-medium	 uppercase my-6 text-dark">
         Sign Up
       </h1>
       <form onSubmit={submitHandler} className="flex flex-col gap-4">
         <input
-          className="border-none rounded-lg p-3 focus:outline-orange-300"
+          className="shadow-sm rounded-lg p-3 focus:outline-secondary"
           type="text"
           name="username"
           placeholder="Username"
@@ -57,15 +60,15 @@ export default function SignUp() {
           onChange={inputHandler}
         />
         <input
-          className="rounded-lg p-3 focus:outline-orange-300"
-          type="text"
+          className="rounded-lg p-3 shadow-sm focus:outline-secondary"
+          type="email"
           name="email"
           placeholder="Email"
           id="email"
           onChange={inputHandler}
         />
         <input
-          className="rounded-lg p-3 focus:outline-orange-300"
+          className="rounded-lg p-3 shadow-sm focus:outline-secondary"
           type="password"
           name="password"
           placeholder="Password"
@@ -75,7 +78,7 @@ export default function SignUp() {
         <button
           disabled={isLoading}
           type="submit"
-          className="bg-orange-500 text-white p-3 mt-3 rounded-lg uppercase hover:opacity-90 disabled:opacity-50"
+          className="bg-secondary text-white p-3 mt-3 rounded-lg uppercase hover:opacity-90 disabled:opacity-50"
         >
           {isLoading ? "Loading..." : "Sign Up"}
         </button>
@@ -83,7 +86,7 @@ export default function SignUp() {
       </form>
       <div className="flex gap-2">
         <p>Have an account?</p>
-        <Link to="/signin" className="text-orange-600 hover:opacity-90">
+        <Link to="/signin" className="text-secondary hover:opacity-95">
           Sign In
         </Link>
       </div>

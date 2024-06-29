@@ -17,7 +17,6 @@ export default function OAuth() {
       const auth = getAuth(app);
 
       const googleCredData = await signInWithPopup(auth, provider);
-      console.log(googleCredData);
 
       const res = await fetch("api/auth/google", {
         method: "POST",
@@ -43,7 +42,7 @@ export default function OAuth() {
       onClick={googleAuthHandler}
       type="button"
       disabled={isLoading}
-      className="flex gap-5 items-center justify-center p-2 text-center bg-white mb-3 text-black rounded-lg uppercase hover:opacity-90 disabled:opacity-50"
+      className="flex gap-5 items-center justify-center p-2 text-center bg-dark mb-3 text-white rounded-lg uppercase hover:opacity-90 disabled:opacity-50"
     >
       <img src={googleIcon} alt="google-icon" height={30} width={30} />
       {isLoading ? "Loading..." : "Continue with Google"}

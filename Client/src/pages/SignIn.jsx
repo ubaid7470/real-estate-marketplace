@@ -48,12 +48,12 @@ export default function SignIn() {
 
   return (
     <div className="p-3 max-w-lg mx-auto">
-      <h1 className="text-3xl text-center font-medium	 uppercase my-6 text-orange-500">
+      <h1 className="text-3xl text-center font-medium	 uppercase my-6 text-dark">
         Sign In
       </h1>
       <form onSubmit={submitHandler} className="flex flex-col gap-4">
         <input
-          className="rounded-lg p-3 focus:outline-orange-300"
+          className="rounded-lg p-3 focus:outline-secondary"
           type="text"
           name="email"
           placeholder="Email"
@@ -61,7 +61,7 @@ export default function SignIn() {
           onChange={inputHandler}
         />
         <input
-          className="rounded-lg p-3 focus:outline-orange-300"
+          className="rounded-lg p-3 focus:outline-secondary"
           type="password"
           name="password"
           placeholder="Password"
@@ -71,7 +71,7 @@ export default function SignIn() {
         <button
           disabled={isLoading}
           type="submit"
-          className="bg-orange-500 text-white p-3 rounded-lg uppercase my-2 hover:opacity-90 disabled:opacity-50"
+          className="bg-secondary text-white p-3 rounded-lg uppercase mt-3 hover:opacity-90 disabled:opacity-50"
         >
           {isLoading ? "Loading..." : "Sign In"}
         </button>
@@ -79,8 +79,8 @@ export default function SignIn() {
       </form>
       <div className="flex gap-2">
         <p>Don`t Have an account?</p>
-        <Link to="/signup" className="text-orange-600 hover:opacity-90">
-          Sign UP
+        <Link to="/signup" className="text-secondary hover:opacity-90">
+          Sign Up
         </Link>
       </div>
       {error && (
