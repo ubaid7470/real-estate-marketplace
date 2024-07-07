@@ -1,26 +1,35 @@
 import { useState, useRef, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { FaCamera } from "react-icons/fa";
+import { app } from "../firebase";
 import {
   getDownloadURL,
   getStorage,
   uploadBytesResumable,
   ref,
 } from "firebase/storage";
-import { app } from "../firebase";
+import {
+  updateUserExecute,
+  updateUserFailed,
+  updateUserSuccess,
+} from "../redux/user/userSlice";
 
 export default function Profile() {
-  const { currentUser } = useSelector((state) => state.user);
-  const [inputValues, setInputValues] = useState({});
+  const { currentUser, isLoading, error } = useSelector((state) => state.user);
   const [imageFile, setImageFile] = useState(undefined);
   const [imageUploadProgress, setImageUploadProgress] = useState(0);
   const [fileUploadError, setFileUploadError] = useState(false);
+  const [profileUpdateSuccess, setProfileUpdateSuccess] = useState(false);
   const [formData, setFormData] = useState({});
+
+  // const {error, isLoading, currentUser} = useSelector((state)=>state.user);
+
+  const dispatch = useDispatch();
 
   const profileRef = useRef(null);
   const inputHandler = (event) => {
-    setInputValues({
-      ...inputValues,
+    setFormData({
+      ...formData,
       [event.target.name]: event.target.value,
     });
   };
@@ -54,12 +63,36 @@ export default function Profile() {
     );
   };
 
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setFileUploadError(false);
+      dispatch(updateUserExecute());
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(updateUserFailed(data.message));
+        return;
+      }
+      dispatch(updateUserSuccess(data));
+      setProfileUpdateSuccess(true);
+    } catch (error) {
+      dispatch(updateUserFailed(error.message));
+    }
+  };
+
   return (
     <div className="mx-auto max-w-lg p-3">
       <h1 className="text-3xl text-center font-medium uppercase my-6 cursor-pointer">
         My Profile
       </h1>
-      <form className="flex flex-col gap-4">
+      <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
         <input
           onChange={(e) => setImageFile(e.target.files[0])}
           type="file"
@@ -80,6 +113,9 @@ export default function Profile() {
             <FaCamera className="text-light h-8 w-8" />
           </div>
         </div>
+        <p className="text-green-700 text-center">
+          {profileUpdateSuccess ? "Profile Updated Successfully" : ""}
+        </p>
         <p className="text-center">
           {fileUploadError ? (
             <span className="text-red-700">
@@ -101,6 +137,7 @@ export default function Profile() {
           name="username"
           placeholder="Username"
           id="username"
+          defaultValue={currentUser.username}
           onChange={inputHandler}
         />
         <input
@@ -109,6 +146,7 @@ export default function Profile() {
           name="email"
           placeholder="Email"
           id="email"
+          defaultValue={currentUser.email}
           onChange={inputHandler}
         />
         <input
@@ -119,14 +157,18 @@ export default function Profile() {
           id="password"
           onChange={inputHandler}
         />
-        <button className="bg-secondary text-white mt-3 rounded-lg text-center p-3">
-          Update Profile
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="bg-secondary text-white mt-3 rounded-lg text-center p-3 disabled:opacity-60"
+        >
+          {isLoading ? "Loading..." : "Update Profile"}
         </button>
         <button className="bg-dark text-white rounded-lg text-center p-3">
           Create Listing
         </button>
       </form>
-      <div className="flex flex-row justify-between px-2 my-3">
+      <div className="flex flex-row justify-between px-2 mt-4">
         <a className="text-red-500 font-medium" href="">
           Delete Account
         </a>
@@ -134,6 +176,7 @@ export default function Profile() {
           Sign Out
         </a>
       </div>
+      <p className="text-red-600">{error ? error : ""}</p>
     </div>
   );
 }
