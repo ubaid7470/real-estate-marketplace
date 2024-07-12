@@ -12,6 +12,9 @@ import {
   updateUserExecute,
   updateUserFailed,
   updateUserSuccess,
+  deleteUserExecute,
+  deleteUserSuccess,
+  deleteUserFailed,
 } from "../redux/user/userSlice";
 
 export default function Profile() {
@@ -38,6 +41,7 @@ export default function Profile() {
     if (imageFile) handleProfileUpload(imageFile);
   }, [imageFile]);
 
+  //Firebase profile image upload
   const handleProfileUpload = (imageFile) => {
     const storage = getStorage(app);
     const fileName = new Date().getTime() + "ProfileImage";
@@ -61,6 +65,25 @@ export default function Profile() {
         });
       }
     );
+  };
+
+  const handleProfileDeletion = async (e) => {
+    e.preventDefault();
+    try {
+      dispatch(deleteUserExecute());
+      const res = await fetch(`api/user/delete/${currentUser._id}`, {
+        method: "DELETE",
+      });
+      const data = res.json();
+      console.log(data);
+      if (data.success === false) {
+        dispatch(deleteUserFailed(error.message));
+        return;
+      }
+      dispatch(deleteUserSuccess());
+    } catch (error) {
+      dispatch(deleteUserFailed(error.message));
+    }
   };
 
   const handleFormSubmit = async (e) => {
@@ -169,7 +192,7 @@ export default function Profile() {
         </button>
       </form>
       <div className="flex flex-row justify-between px-2 mt-4">
-        <a className="text-red-500 font-medium" href="">
+        <a onClick={handleProfileDeletion} className="text-red-500 font-medium">
           Delete Account
         </a>
         <a className="text-dark font-medium" href="">
