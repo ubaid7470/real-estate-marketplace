@@ -15,6 +15,9 @@ import {
   deleteUserExecute,
   deleteUserSuccess,
   deleteUserFailed,
+  signOutUserExecute,
+  signOutUserSuccess,
+  signOutUserFailed,
 } from "../redux/user/userSlice";
 
 export default function Profile() {
@@ -86,6 +89,22 @@ export default function Profile() {
     }
   };
 
+  const handleSignOut = async (e) => {
+    e.preventDefault();
+    try {
+      dispatch(signOutUserExecute());
+      const res = await fetch("api/auth/signOut");
+
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(signOutUserFailed(error.message));
+      }
+      dispatch(signOutUserSuccess());
+    } catch (error) {
+      dispatch(signOutUserFailed(error.message));
+    }
+  };
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -136,9 +155,14 @@ export default function Profile() {
             <FaCamera className="text-light h-8 w-8" />
           </div>
         </div>
-        <p className="text-green-700 text-center">
-          {profileUpdateSuccess ? "Profile Updated Successfully" : ""}
-        </p>
+        {profileUpdateSuccess ? (
+          <p className="text-green-700 text-center">
+            Profile Updated Successfully
+          </p>
+        ) : (
+          ""
+        )}
+
         <p className="text-center">
           {fileUploadError ? (
             <span className="text-red-700">
@@ -151,7 +175,7 @@ export default function Profile() {
           ) : imageUploadProgress === 100 ? (
             <span className="text-green-700">Profile Image Uploaded!</span>
           ) : (
-            ""
+            <span hidden />
           )}
         </p>
         <input
@@ -191,11 +215,18 @@ export default function Profile() {
           Create Listing
         </button>
       </form>
-      <div className="flex flex-row justify-between px-2 mt-4">
-        <a onClick={handleProfileDeletion} className="text-red-500 font-medium">
+      <div className="flex flex-row justify-between px-2 mt-4 mb-8">
+        <a
+          onClick={handleProfileDeletion}
+          className="text-red-500 font-medium cursor-pointer"
+        >
           Delete Account
         </a>
-        <a className="text-dark font-medium" href="">
+        <a
+          onClick={handleSignOut}
+          className="text-dark font-medium cursor-pointer"
+          href=""
+        >
           Sign Out
         </a>
       </div>

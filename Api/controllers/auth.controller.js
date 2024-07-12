@@ -93,3 +93,12 @@ export const google = async (req, res, next) => {
     next(error);
   }
 };
+
+export const signOutUser = async (req, res, next) => {
+  try {
+    res.clearCookie("access_token");
+    return res.status(200).json("User Sign Out Successfully");
+  } catch (error) {
+    next(error);
+  }
+};
