@@ -3,6 +3,8 @@ import express from "express";
 import mongoose from "mongoose";
 import UserRoute from "./routes/user.route.js";
 import AuthRoute from "./routes/auth.route.js";
+import ListingRoute from "./routes/listing.route.js";
+
 import cookieParser from "cookie-parser";
 
 dotenv.config();
@@ -25,8 +27,9 @@ app.listen(3000, () => {
   console.log("Server is running on port 3000!!!");
 });
 
-app.use("/api/user", UserRoute);
 app.use("/api/auth", AuthRoute);
+app.use("/api/user", UserRoute);
+app.use("/api/listing", ListingRoute);
 
 //middle ware
 app.use((err, req, res, next) => {
