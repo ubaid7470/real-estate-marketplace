@@ -19,6 +19,7 @@ import {
   signOutUserSuccess,
   signOutUserFailed,
 } from "../redux/user/userSlice";
+import { Link } from "react-router-dom";
 
 export default function Profile() {
   const { currentUser, isLoading, error } = useSelector((state) => state.user);
@@ -27,8 +28,6 @@ export default function Profile() {
   const [fileUploadError, setFileUploadError] = useState(false);
   const [profileUpdateSuccess, setProfileUpdateSuccess] = useState(false);
   const [formData, setFormData] = useState({});
-
-  // const {error, isLoading, currentUser} = useSelector((state)=>state.user);
 
   const dispatch = useDispatch();
 
@@ -207,13 +206,24 @@ export default function Profile() {
         <button
           type="submit"
           disabled={isLoading}
-          className="bg-secondary text-white mt-3 rounded-lg text-center p-3 disabled:opacity-60"
+          className="bg-secondary text-primary mt-3 rounded-lg text-center p-3.5 hover:opacity-95 disabled:opacity-60"
         >
           {isLoading ? "Loading..." : "Update Profile"}
         </button>
-        <button className="bg-dark text-white rounded-lg text-center p-3">
-          Create Listing
-        </button>
+
+        <div className="flex justify-between w-full">
+          <Link to="/create-listing" className="w-1/2 p-1">
+            <button className="bg-primary w-full outline outline-2 outline-dark hover:bg-dark hover:text-primary text-dark rounded-lg text-center p-3 transition duration-200 ease-in">
+              Create Listing
+            </button>
+          </Link>
+
+          <Link to="/create-listing" className="w-1/2 p-1">
+            <button className="bg-dark outline outline-2 outline-dark hover:outline-2 hover:outline-dark hover:bg-primary hover:text-dark text-primary w-full rounded-lg text-center p-3 transition duration-300 ease-in">
+              View Listings
+            </button>
+          </Link>
+        </div>
       </form>
       <div className="flex flex-row justify-between px-2 mt-4 mb-8">
         <a

@@ -6,3 +6,13 @@ body {
   background-color: #efe7e2;
   font-family: "Poppins", sans-serif;
 }
+
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spinner {
+  -moz-appearance: textfield;
+}
