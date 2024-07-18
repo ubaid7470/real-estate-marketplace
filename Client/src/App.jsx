@@ -7,11 +7,13 @@ import SignUp from "./pages/SignUp";
 import Header from "./components/Header";
 import PrivateRoute from "./components/PrivateRoute";
 import CreateListing from "./pages/CreateListing";
+import Toast from "./components/Toast";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Header />
+      <Toast />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/signin" element={<SignIn />} />

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { openToast } from "../redux/toast/toastSlice";
 import {
   signInExecution,
   signInSuccess,
@@ -10,7 +11,7 @@ import OAuth from "../components/OAuth";
 
 export default function SignIn() {
   const [inputValues, setInputValues] = useState({});
-  const { isLoading, error } = useSelector((state) => state.user);
+  const { isLoading } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -19,7 +20,6 @@ export default function SignIn() {
       ...inputValues,
       [e.target.id]: e.target.value,
     });
-    console.log(inputValues);
   };
 
   const submitHandler = async (e) => {
@@ -34,15 +34,27 @@ export default function SignIn() {
         body: JSON.stringify(inputValues),
       });
       const data = await res.json();
-      console.log(data);
+
       if (data.success === false) {
         dispatch(signInFailed(data.message));
+        dispatch(
+          openToast({
+            message: data.message,
+            severity: "error",
+          })
+        );
         return;
       }
       dispatch(signInSuccess(data));
       navigate("/");
     } catch (error) {
       dispatch(signInFailed(error.message));
+      dispatch(
+        openToast({
+          message: error.message,
+          severity: "error",
+        })
+      );
     }
   };
 
@@ -54,11 +66,12 @@ export default function SignIn() {
       <form onSubmit={submitHandler} className="flex flex-col gap-4">
         <input
           className="rounded-lg p-3 focus:outline-secondary"
-          type="text"
+          type="email"
           name="email"
           placeholder="Email"
           id="email"
           onChange={inputHandler}
+          required
         />
         <input
           className="rounded-lg p-3 focus:outline-secondary"
@@ -67,6 +80,7 @@ export default function SignIn() {
           placeholder="Password"
           id="password"
           onChange={inputHandler}
+          required
         />
         <button
           disabled={isLoading}
@@ -83,11 +97,6 @@ export default function SignIn() {
           Sign Up
         </Link>
       </div>
-      {error && (
-        <div className="bg-red-300 mt-3 rounded-lg p-3">
-          <p className="text-red-600 text-sm "> {error}</p>
-        </div>
-      )}
     </div>
   );
 }

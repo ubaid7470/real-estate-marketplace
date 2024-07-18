@@ -34,7 +34,14 @@ app.use("/api/listing", ListingRoute);
 //middle ware
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
+  let message = err.message || "Internal Server Error";
+  if (err.code === 11000) {
+    const field = Object.keys(err.keyValue)[0];
+    const value = err.keyValue[field];
+    message = `${
+      field.charAt(0).toUpperCase() + field.slice(1)
+    } "${value}" already exists!`;
+  }
   return res.status(statusCode).json({
     success: false,
     statusCode,

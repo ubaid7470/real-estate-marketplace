@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import OAuth from "../components/OAuth";
 import { useDispatch, useSelector } from "react-redux";
+import { openToast } from "../redux/toast/toastSlice";
 import {
   signInExecution,
   signUpSuccess,
@@ -33,15 +34,26 @@ export default function SignUp() {
         body: JSON.stringify(inputValues),
       });
       const data = await res.json();
-
       if (data.success === false) {
         dispatch(signInFailed(data.message));
+        dispatch(
+          openToast({
+            message: data.message,
+            severity: "error",
+          })
+        );
         return;
       }
       dispatch(signUpSuccess());
       navigate("/signin");
     } catch (error) {
-      dispatch(signInFailed(error));
+      dispatch(signInFailed(error.message));
+      dispatch(
+        openToast({
+          message: error.message,
+          severity: "error",
+        })
+      );
     }
   };
 
@@ -90,11 +102,6 @@ export default function SignUp() {
           Sign In
         </Link>
       </div>
-      {error && (
-        <div className="bg-red-300 mt-3 rounded-lg p-3">
-          <p className="text-red-600 text-sm "> {error}</p>
-        </div>
-      )}
     </div>
   );
 }

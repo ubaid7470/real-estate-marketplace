@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { FaCamera } from "react-icons/fa";
 import { app } from "../firebase";
+import { openToast } from "../redux/toast/toastSlice";
 import {
   getDownloadURL,
   getStorage,
@@ -25,8 +26,7 @@ export default function Profile() {
   const { currentUser, isLoading, error } = useSelector((state) => state.user);
   const [imageFile, setImageFile] = useState(undefined);
   const [imageUploadProgress, setImageUploadProgress] = useState(0);
-  const [fileUploadError, setFileUploadError] = useState(false);
-  const [profileUpdateSuccess, setProfileUpdateSuccess] = useState(false);
+  const [fileUploadError, setFileUploadError] = useState(undefined);
   const [formData, setFormData] = useState({});
 
   const dispatch = useDispatch();
@@ -43,6 +43,26 @@ export default function Profile() {
     if (imageFile) handleProfileUpload(imageFile);
   }, [imageFile]);
 
+  useEffect(() => {
+    if (imageUploadProgress === 100) {
+      if (fileUploadError) {
+        dispatch(
+          openToast({
+            message: "Image must be less than 2MB",
+            severity: "error",
+          })
+        );
+      } else {
+        dispatch(
+          openToast({
+            message: "Profile Image Uploaded!",
+            severity: "success",
+          })
+        );
+      }
+    }
+  }, [imageUploadProgress, fileUploadError, dispatch]);
+
   //Firebase profile image upload
   const handleProfileUpload = (imageFile) => {
     const storage = getStorage(app);
@@ -58,8 +78,7 @@ export default function Profile() {
         setImageUploadProgress(Math.round(uploadProgress));
       },
       (error) => {
-        setFileUploadError(true);
-        console.log(error);
+        setFileUploadError(error);
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
@@ -77,14 +96,25 @@ export default function Profile() {
         method: "DELETE",
       });
       const data = res.json();
-      console.log(data);
       if (data.success === false) {
         dispatch(deleteUserFailed(error.message));
+        dispatch(
+          openToast({
+            message: error.message,
+            severity: "error",
+          })
+        );
         return;
       }
       dispatch(deleteUserSuccess());
     } catch (error) {
       dispatch(deleteUserFailed(error.message));
+      dispatch(
+        openToast({
+          message: error.message,
+          severity: "error",
+        })
+      );
     }
   };
 
@@ -97,10 +127,22 @@ export default function Profile() {
       const data = await res.json();
       if (data.success === false) {
         dispatch(signOutUserFailed(error.message));
+        dispatch(
+          openToast({
+            message: error.message,
+            severity: "error",
+          })
+        );
       }
       dispatch(signOutUserSuccess());
     } catch (error) {
       dispatch(signOutUserFailed(error.message));
+      dispatch(
+        openToast({
+          message: error.message,
+          severity: "error",
+        })
+      );
     }
   };
 
@@ -119,12 +161,29 @@ export default function Profile() {
       const data = await res.json();
       if (data.success === false) {
         dispatch(updateUserFailed(data.message));
+        dispatch(
+          openToast({
+            message: data.message,
+            severity: "error",
+          })
+        );
         return;
       }
       dispatch(updateUserSuccess(data));
-      setProfileUpdateSuccess(true);
+      dispatch(
+        openToast({
+          message: "Your profile has been updated!",
+          severity: "success",
+        })
+      );
     } catch (error) {
       dispatch(updateUserFailed(error.message));
+      dispatch(
+        openToast({
+          message: error.message,
+          severity: "error",
+        })
+      );
     }
   };
 
@@ -154,25 +213,12 @@ export default function Profile() {
             <FaCamera className="text-light h-8 w-8" />
           </div>
         </div>
-        {profileUpdateSuccess ? (
-          <p className="text-green-700 text-center">
-            Profile Updated Successfully
-          </p>
-        ) : (
-          ""
-        )}
 
         <p className="text-center">
-          {fileUploadError ? (
-            <span className="text-red-700">
-              Image should be of less than 2MB
-            </span>
-          ) : imageUploadProgress >= 1 && imageUploadProgress < 100 ? (
+          {imageUploadProgress >= 1 && imageUploadProgress < 100 ? (
             <span className="text-secondary">
               Uploading profile image {imageUploadProgress}%
             </span>
-          ) : imageUploadProgress === 100 ? (
-            <span className="text-green-700">Profile Image Uploaded!</span>
           ) : (
             <span hidden />
           )}
