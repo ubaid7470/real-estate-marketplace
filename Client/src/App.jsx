@@ -8,12 +8,14 @@ import Header from "./components/Header";
 import PrivateRoute from "./components/PrivateRoute";
 import CreateListing from "./pages/CreateListing";
 import Toast from "./components/Toast";
+import SimpleBackdrop from "./components/BackDrop";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Header />
       <Toast />
+      <SimpleBackdrop />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/signin" element={<SignIn />} />

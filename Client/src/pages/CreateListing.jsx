@@ -1,4 +1,5 @@
 import { TailSpin } from "react-loader-spinner";
+import { BsTrash3Fill } from "react-icons/bs";
 import Checkbox from "@mui/material/Checkbox";
 import { useEffect, useState } from "react";
 import { app } from "../firebase";
@@ -13,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { closeToast, openToast } from "../redux/toast/toastSlice";
 import { handleLoader } from "../redux/user/userSlice";
 import CustomSwitch from "../components/CustomSwitch";
+import { closeBackdrop, openBackdrop } from "../redux/Loaders/backdropSlice";
 
 export default function CreateListing() {
   const dispatch = useDispatch();
@@ -36,6 +38,7 @@ export default function CreateListing() {
     imageUrls: [],
   });
   const [imageUploadError, setImageUploadError] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState(null);
   const [imageUploadLoading, setImageUploadLoading] = useState(false);
 
   const handleImageSubmit = () => {
@@ -116,9 +119,7 @@ export default function CreateListing() {
       uploadTask.on(
         "state_changed",
         (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log("Upload is " + progress + "% done");
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         },
         (error) => {
           reject(error);
@@ -134,12 +135,10 @@ export default function CreateListing() {
 
   const deleteImageFromFirebase = async (imageUrl) => {
     const storage = getStorage(app);
-    console.log("this is url: ", imageUrl);
     const imageRef = ref(storage, imageUrl);
 
     try {
       await deleteObject(imageRef);
-      console.log("Image deleted from Firebase storage");
     } catch (error) {
       console.error("Error deleting image from Firebase storage", error);
     }
@@ -208,7 +207,7 @@ export default function CreateListing() {
         formData.discountPrice = 0;
       }
 
-      handleLoader(true);
+      dispatch(openBackdrop());
       const res = await fetch("api/listing/create", {
         method: "POST",
         headers: {
@@ -218,8 +217,8 @@ export default function CreateListing() {
       });
       const data = await res.json();
 
+      dispatch(closeBackdrop());
       if (data.success === false) {
-        handleLoader(false);
         dispatch(
           openToast({
             message: data.message,
@@ -228,7 +227,7 @@ export default function CreateListing() {
         );
       }
     } catch (error) {
-      handleLoader(false);
+      dispatch(closeBackdrop());
       dispatch(
         openToast({
           message: error.message,
@@ -239,7 +238,7 @@ export default function CreateListing() {
   };
 
   useEffect(() => {
-    handleLoader(false);
+    dispatch(closeBackdrop());
     setImageUploadError(false);
     dispatch(closeToast());
   }, []);
@@ -490,24 +489,30 @@ export default function CreateListing() {
           {!imageUploadLoading && formData.imageUrls.length > 0 && (
             <div className="flex flex-wrap gap-y-5 gap-x-6 border border-dashed border-secondaryLight shadow rounded-md p-3">
               {formData.imageUrls.map((image, index) => (
-                <div key={index} className="relative w-24 h-24">
+                <div
+                  key={index}
+                  className="relative w-24 h-24"
+                  onMouseEnter={() => setHoveredIndex(index)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                >
                   <img
                     src={image}
                     alt="image"
                     className="w-full h-full object-cover rounded-lg shadow-secondaryLight shadow-md"
                   />
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteImage(index)}
-                    className="absolute top-0 right-0 p-2 text-white bg-red-500 rounded hover:bg-red-600"
-                  >
-                    X
-                  </button>
+                  {hoveredIndex === index && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteImage(index)}
+                      className="absolute top-0 h-full w-full flex items-center justify-center text-white rounded hover:bg-dark hover:opacity-60"
+                    >
+                      <BsTrash3Fill size={25} />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
           )}
-
           <h3 className="text-lg font-medium mt-3">Property Pricing</h3>
           <div className="flex justify-between items-center gap-2">
             <div className="flex flex-col items-center w-3.5/12">
