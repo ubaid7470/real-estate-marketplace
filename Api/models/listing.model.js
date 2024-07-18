@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const listingSchema = new mongoose.Schema(
   {
-    name: {
+    title: {
       type: String,
       required: true,
     },
@@ -48,6 +48,14 @@ const listingSchema = new mongoose.Schema(
     },
     petsAllowed: {
       type: Boolean,
+      required: true,
+    },
+    balcony: {
+      type: Number,
+      required: true,
+    },
+    kitchen: {
+      type: Number,
       required: true,
     },
     images: {

@@ -9,13 +9,30 @@ import {
   ref,
   uploadBytesResumable,
 } from "firebase/storage";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { closeToast, openToast } from "../redux/toast/toastSlice";
+import { handleLoader } from "../redux/user/userSlice";
+import CustomSwitch from "../components/CustomSwitch";
 
 export default function CreateListing() {
   const dispatch = useDispatch();
+  const { isLoading, currentUser } = useSelector((state) => state.user);
   const [imageFiles, setImageFiles] = useState([]);
   const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    address: "",
+    regularPrice: "",
+    discountPrice: "",
+    type: "rent",
+    furnished: false,
+    parking: false,
+    discount: false,
+    petsAllowed: false,
+    bedroom: 1,
+    bathroom: 1,
+    kitchen: 1,
+    balcony: 0,
     imageUrls: [],
   });
   const [imageUploadError, setImageUploadError] = useState(false);
@@ -77,10 +94,12 @@ export default function CreateListing() {
           );
         });
     } else {
-      setImageUploadError("You can only upload 8 images!");
+      setImageUploadError(
+        "Please upload at least 1 image and no more than 8 images!"
+      );
       dispatch(
         openToast({
-          message: "You can only upload 8 images!",
+          message: "Please upload at least 1 image and no more than 8 images!",
           severity: "error",
         })
       );
@@ -135,7 +154,92 @@ export default function CreateListing() {
     }));
   };
 
+  const onChangeHandler = (event) => {
+    if (event.target.id == "sell" || event.target.id == "rent") {
+      setFormData({
+        ...formData,
+        type: event.target.id,
+      });
+    }
+    if (
+      event.target.type == "text" ||
+      event.target.type == "number" ||
+      event.target.type == "textarea"
+    ) {
+      setFormData({
+        ...formData,
+        [event.target.id]: event.target.value,
+      });
+    }
+
+    if (
+      event.target.id === "parking" ||
+      event.target.id === "petsAllowed" ||
+      event.target.id === "furnished" ||
+      event.target.id === "discount"
+    ) {
+      setFormData({
+        ...formData,
+        [event.target.id]: event.target.checked,
+      });
+    }
+  };
+
+  const formSubmitHandler = async (event) => {
+    event.preventDefault();
+    try {
+      if (formData.imageUrls.length < 1) {
+        return dispatch(
+          openToast({
+            message: "Upload Property Images!",
+            severity: "error",
+          })
+        );
+      } else if (+formData.regularPrice <= +formData.discountPrice) {
+        return dispatch(
+          openToast({
+            message: "Discounted Price must be lower than Regular Price!",
+            severity: "error",
+          })
+        );
+      }
+
+      if (formData.discountPrice == "") {
+        formData.discountPrice = 0;
+      }
+
+      handleLoader(true);
+      const res = await fetch("api/listing/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...formData, userRef: currentUser._id }),
+      });
+      const data = await res.json();
+
+      if (data.success === false) {
+        handleLoader(false);
+        dispatch(
+          openToast({
+            message: data.message,
+            severity: "error",
+          })
+        );
+      }
+    } catch (error) {
+      handleLoader(false);
+      dispatch(
+        openToast({
+          message: error.message,
+          severity: "error",
+        })
+      );
+    }
+  };
+
   useEffect(() => {
+    handleLoader(false);
     setImageUploadError(false);
     dispatch(closeToast());
   }, []);
@@ -143,11 +247,17 @@ export default function CreateListing() {
   return (
     <main className="mx-auto p-3 max-w-5xl">
       <h1 className="text-3xl font-bold uppercase my-6">About Your Place</h1>
-      <form className="flex flex-col sm:flex-row gap-8">
+      <form
+        onSubmit={formSubmitHandler}
+        className="flex flex-col sm:flex-row gap-8"
+      >
         <div className="flex flex-col gap-3 flex-1">
-          <h2 className="text-lg font-medium">Add Details</h2>
+          <h2 className="text-lg font-medium">Property Details</h2>
           <input
-            className="shadow-sm rounded-lg p-3 focus:outline-secondary"
+            className="shadow-sm rounded-lg p-3 mt-1 focus:outline-secondary"
+            id="title"
+            value={formData.title}
+            onChange={onChangeHandler}
             type="text"
             placeholder="Enter Title"
             maxLength={64}
@@ -156,22 +266,30 @@ export default function CreateListing() {
           />
           <textarea
             className="shadow-sm rounded-lg p-3 focus:outline-secondary"
+            id="description"
+            value={formData.description}
+            onChange={onChangeHandler}
             type="text"
             placeholder="Enter Description"
             required
           />
           <input
             className="shadow-sm rounded-lg p-3 focus:outline-secondary"
+            id="address"
+            value={formData.address}
+            onChange={onChangeHandler}
             type="text"
             placeholder="Enter Address"
             required
           />
 
-          <h3 className="text-lg font-medium">Property Type</h3>
+          <h3 className="text-lg font-medium mt-4">Property Type</h3>
           <div className="flex gap-x-6 flex-wrap">
             <div className="flex items-center gap-2">
               <Checkbox
                 id="sell"
+                checked={formData.type === "sell"}
+                onChange={onChangeHandler}
                 className="w-4"
                 sx={{
                   color: "#AF795D",
@@ -187,6 +305,8 @@ export default function CreateListing() {
             <div className="flex items-center gap-2">
               <Checkbox
                 id="rent"
+                checked={formData.type === "rent"}
+                onChange={onChangeHandler}
                 className="w-4"
                 sx={{
                   color: "#AF795D",
@@ -202,6 +322,8 @@ export default function CreateListing() {
             <div className="flex items-center gap-2">
               <Checkbox
                 id="furnished"
+                checked={formData.furnished}
+                onChange={onChangeHandler}
                 className="w-4"
                 sx={{
                   color: "#AF795D",
@@ -217,6 +339,8 @@ export default function CreateListing() {
             <div className="flex items-center gap-2">
               <Checkbox
                 id="parking"
+                checked={formData.parking}
+                onChange={onChangeHandler}
                 className="w-4"
                 sx={{
                   color: "#AF795D",
@@ -229,24 +353,12 @@ export default function CreateListing() {
                 Parking Area
               </label>
             </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="discount"
-                className="w-4"
-                sx={{
-                  color: "#AF795D",
-                  "&.Mui-checked": {
-                    color: "#AF795D",
-                  },
-                }}
-              />
-              <label htmlFor="discount" className="text-md">
-                Discount
-              </label>
-            </div>
+
             <div className="flex items-center gap-2">
               <Checkbox
                 id="petsAllowed"
+                checked={formData.petsAllowed}
+                onChange={onChangeHandler}
                 className="w-4"
                 sx={{
                   color: "#AF795D",
@@ -261,16 +373,17 @@ export default function CreateListing() {
             </div>
           </div>
 
-          <h3 className="text-lg">Rooms</h3>
-          <div className="flex flex-wrap gap-6 mb-3">
+          <h3 className="text-lg font-medium mt-3">Property Rooms</h3>
+          <div className="flex flex-wrap gap-6 mb-3 mt-2">
             <div className="flex items-center gap-2">
               <label>Bedrooms</label>
               <input
                 type="number"
                 id="bedroom"
+                onChange={onChangeHandler}
+                value={formData.bedroom}
                 min="1"
                 max="10"
-                defaultValue={0}
                 required
                 className="no-spinner p-1 text-center border border-gray-300 rounded-lg"
               />
@@ -280,9 +393,36 @@ export default function CreateListing() {
               <input
                 type="number"
                 id="bathroom"
+                onChange={onChangeHandler}
+                value={formData.bathroom}
                 min="1"
                 max="10"
-                defaultValue={0}
+                required
+                className="no-spinner p-1 text-center border border-gray-300 rounded-lg"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label>Kitchens</label>
+              <input
+                type="number"
+                id="kitchen"
+                onChange={onChangeHandler}
+                value={formData.kitchen}
+                min="1"
+                max="10"
+                required
+                className="no-spinner p-1 text-center border border-gray-300 rounded-lg"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label>Balconies</label>
+              <input
+                type="number"
+                id="balcony"
+                onChange={onChangeHandler}
+                value={formData.balcony}
+                min="0"
+                max="10"
                 required
                 className="no-spinner p-1 text-center border border-gray-300 rounded-lg"
               />
@@ -291,7 +431,7 @@ export default function CreateListing() {
         </div>
 
         <div className="flex flex-col flex-1 gap-4">
-          <h2 className="text-lg font-medium">Add Images</h2>
+          <h2 className="text-lg font-medium">Property Images</h2>
           <div className="flex gap-4">
             <input
               onChange={(e) => setImageFiles(e.target.files)}
@@ -368,37 +508,49 @@ export default function CreateListing() {
             </div>
           )}
 
-          <h3 className="text-lg font-medium mt-3">Pricing</h3>
+          <h3 className="text-lg font-medium mt-3">Property Pricing</h3>
           <div className="flex justify-between items-center gap-2">
             <div className="flex flex-col items-center w-3.5/12">
-              <p>Regular price</p>
+              <label>Regular price</label>
               <span className="text-xs">($ / month)</span>
             </div>
             <input
               type="number"
               id="regularPrice"
+              onChange={onChangeHandler}
+              value={formData.regularPrice}
               min="1"
-              max="10"
               placeholder="Enter Regular Price"
               required
               className="no-spinner text-center border border-gray-300 w-7/12 rounded-lg p-2 focus:outline-secondary"
             />
           </div>
-          <div className="flex justify-between items-center gap-2">
-            <div className="flex flex-col items-center w-3.5/12">
-              <p>Discounted price</p>
-              <span className="text-xs">($ / month)</span>
-            </div>
-            <input
-              type="number"
-              id="discountPrice"
-              min="1"
-              max="10"
-              placeholder="Enter Discounted Price"
-              required
-              className="no-spinner text-center border border-gray-300 w-7/12 rounded-lg p-2 focus:outline-secondary"
+          <div className="flex items-center">
+            <label className="font-medium">Discount: </label>
+            <CustomSwitch
+              aria-label={"discount switch"}
+              id="discount"
+              checked={formData.discount}
+              onChange={onChangeHandler}
             />
           </div>
+          {formData.discount && (
+            <div className="flex justify-between items-center gap-2">
+              <div className="flex flex-col items-center w-3.5/12">
+                <label>Discounted price</label>
+                <span className="text-xs">($ / month)</span>
+              </div>
+              <input
+                type="number"
+                id="discountPrice"
+                onChange={onChangeHandler}
+                value={formData.discountPrice}
+                min="1"
+                placeholder="Enter Discounted Price"
+                className="no-spinner text-center border border-gray-300 w-7/12 rounded-lg p-2 focus:outline-secondary"
+              />
+            </div>
+          )}
           <button className="p-3 my-4 sm:my-12 bg-secondary text-primary rounded-lg uppercase hover:opacity-95 disabled:opacity-80">
             Create Listing
           </button>
