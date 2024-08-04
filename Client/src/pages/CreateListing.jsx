@@ -12,13 +12,13 @@ import {
 } from "firebase/storage";
 import { useDispatch, useSelector } from "react-redux";
 import { closeToast, openToast } from "../redux/toast/toastSlice";
-import { handleLoader } from "../redux/user/userSlice";
 import CustomSwitch from "../components/CustomSwitch";
 import { closeBackdrop, openBackdrop } from "../redux/Loaders/backdropSlice";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateListing() {
   const dispatch = useDispatch();
-  const { isLoading, currentUser } = useSelector((state) => state.user);
+  const { currentUser } = useSelector((state) => state.user);
   const [imageFiles, setImageFiles] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
@@ -40,6 +40,8 @@ export default function CreateListing() {
   const [imageUploadError, setImageUploadError] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [imageUploadLoading, setImageUploadLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleImageSubmit = () => {
     if (
@@ -225,6 +227,16 @@ export default function CreateListing() {
             severity: "error",
           })
         );
+      } else {
+        dispatch(
+          openToast({
+            message: "Images have been uploaded",
+            severity: "success",
+          })
+        );
+        setTimeout(() => {
+          navigate(`listing/${data._id}`);
+        }, 1500);
       }
     } catch (error) {
       dispatch(closeBackdrop());
@@ -235,6 +247,7 @@ export default function CreateListing() {
         })
       );
     }
+    dispatch(closeToast());
   };
 
   useEffect(() => {
