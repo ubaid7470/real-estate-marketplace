@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import logo from "../assets/logo.png";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+
 import {
   signOutUserExecute,
   signOutUserSuccess,
@@ -42,8 +43,8 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-primary">
-      <div className="flex justify-between items-center max-w-6xl mx-auto p-3">
+    <header className="bg-primary custom-container">
+      <div className="flex justify-between items-center">
         <Link to="/">
           <img className="h-16 w-22 md:h-20 md:w-32" src={logo} alt="Logo" />
         </Link>
@@ -97,7 +98,7 @@ export default function Header() {
                 <Link to="/profile" className="text-dark cursor-pointer">
                   <MenuItem onClick={handleClose}>Profile</MenuItem>
                 </Link>
-                <Link to="/create-listing" className="text-dark cursor-pointer">
+                <Link to="/view-listings" className="text-dark cursor-pointer">
                   <MenuItem onClick={handleClose}>View Listings</MenuItem>
                 </Link>
                 <Link to="/create-listing" className="text-dark cursor-pointer">

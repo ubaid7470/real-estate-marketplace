@@ -189,7 +189,7 @@ export default function Profile() {
 
   return (
     <div className="mx-auto max-w-lg p-3">
-      <h1 className="text-3xl text-center font-medium uppercase my-6 cursor-pointer">
+      <h1 className="text-3xl text-center font-bold uppercase my-6 cursor-pointer">
         My Profile
       </h1>
       <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
@@ -264,7 +264,7 @@ export default function Profile() {
             </button>
           </Link>
 
-          <Link to="/create-listing" className="w-1/2 p-1">
+          <Link to="/view-listings" className="w-1/2 p-1">
             <button className="bg-dark outline outline-2 outline-dark hover:outline-2 hover:outline-dark hover:bg-primary hover:text-dark text-primary w-full rounded-lg text-center p-3 transition duration-300 ease-in">
               View Listings
             </button>

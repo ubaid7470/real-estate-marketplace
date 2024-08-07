@@ -12,7 +12,7 @@ import {
 } from "firebase/storage";
 import { useDispatch, useSelector } from "react-redux";
 import { closeToast, openToast } from "../redux/toast/toastSlice";
-import CustomSwitch from "../components/CustomSwitch";
+import CustomSwitch from "../components/UI/CustomSwitch";
 import { closeBackdrop, openBackdrop } from "../redux/Loaders/backdropSlice";
 import { useNavigate } from "react-router-dom";
 
@@ -208,13 +208,14 @@ export default function CreateListing() {
       if (formData.discountPrice == "") {
         formData.discountPrice = 0;
       }
-
+      console.log(formData);
       dispatch(openBackdrop());
       const res = await fetch("api/listing/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+
         body: JSON.stringify({ ...formData, userRef: currentUser._id }),
       });
       const data = await res.json();
@@ -257,7 +258,7 @@ export default function CreateListing() {
   }, []);
 
   return (
-    <main className="mx-auto p-3 max-w-5xl">
+    <main className="custom-container">
       <h1 className="text-3xl font-bold uppercase my-6">About Your Place</h1>
       <form
         onSubmit={formSubmitHandler}

@@ -1,0 +1,7 @@
+.custom-container {
+  @apply mx-auto max-w-7xl p-3;
+}
+
+.primary-heading {
+  @apply text-3xl font-bold uppercase my-6;
+}
