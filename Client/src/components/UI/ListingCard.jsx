@@ -1,20 +1,36 @@
-import React, { useState } from "react";
-import { HiDotsVertical } from "react-icons/hi";
+import { useState } from "react";
 import { FaHeart } from "react-icons/fa";
+import { HiDotsVertical } from "react-icons/hi";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import { Link } from "react-router-dom";
-
 import PropTypes from "prop-types";
+import { useDispatch } from "react-redux";
+import { openToast } from "../../redux/toast/toastSlice";
 
-const ListingCard = ({ title, description, image }) => {
-  const [anchorEl, setAnchorEl] = React.useState(null);
+const ListingCard = ({ listingID, title, description, image, onDelete }) => {
+  const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const dispatch = useDispatch();
+
+  const handleDelete = async () => {
+    try {
+      await onDelete(listingID); // Call the delete function passed from parent
+      handleClose(); // Close the menu after deletion
+    } catch (error) {
+      dispatch(
+        openToast({
+          message: "Failed to delete listing",
+          severity: "error",
+        })
+      );
+    }
   };
 
   return (
@@ -29,7 +45,6 @@ const ListingCard = ({ title, description, image }) => {
         >
           <span className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
             <HiDotsVertical fill="white" className="h-full w-5" />
-
             {/* <FaHeart fill="red" className="h-full w-5" /> */}
           </span>
         </button>
@@ -49,7 +64,7 @@ const ListingCard = ({ title, description, image }) => {
           }}
         >
           <MenuItem onClick={handleClose}>Edit</MenuItem>
-          <MenuItem onClick={handleClose}>Delete</MenuItem>
+          <MenuItem onClick={handleDelete}>Delete</MenuItem>{" "}
           <MenuItem onClick={handleClose}>Close</MenuItem>
         </Menu>
       </div>
@@ -84,9 +99,11 @@ const ListingCard = ({ title, description, image }) => {
 };
 
 ListingCard.propTypes = {
+  listingID: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
   image: PropTypes.string.isRequired,
+  onDelete: PropTypes.func.isRequired,
 };
 
 export default ListingCard;

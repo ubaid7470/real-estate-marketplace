@@ -1,4 +1,3 @@
-// import Breadcrumb from "../components/UI/Breadcrumbs";
 import { useEffect, useState } from "react";
 import ListingCard from "../components/UI/ListingCard";
 import { useDispatch, useSelector } from "react-redux";
@@ -23,15 +22,47 @@ const UserListings = () => {
         return;
       }
       setUserListings(data);
-      console.log(userListings);
     } catch (error) {
-      console.error("Error fetching listings:", error);
+      dispatch(
+        openToast({
+          message: error.message,
+          severity: "error",
+        })
+      );
     }
   };
 
   useEffect(() => {
     fetchUserListings();
   }, []);
+
+  const handleDelete = async (listingID) => {
+    try {
+      const res = await fetch(`/api/listing/delete/${listingID}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(
+          openToast({
+            message: data.message,
+            severity: "error",
+          })
+        );
+        return;
+      }
+      setUserListings(
+        userListings.filter((listing) => listing._id !== listingID)
+      );
+    } catch (error) {
+      dispatch(
+        openToast({
+          message: error.message,
+          severity: "error",
+        })
+      );
+    }
+  };
 
   return (
     <div className="custom-container">
@@ -40,9 +71,11 @@ const UserListings = () => {
         {userListings.map((listing) => (
           <ListingCard
             key={listing._id}
+            listingID={listing._id}
             image={listing.imageUrls[0]}
             title={listing.title}
             description={listing.description}
+            onDelete={handleDelete}
           />
         ))}
       </div>

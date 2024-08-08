@@ -9,7 +9,7 @@ import { verifyUserToken } from "../utils/verifyUser.js";
 const route = express.Router();
 
 route.post("/create", verifyUserToken, createListing);
-route.post("/update", verifyUserToken, createListing);
-route.delete("/delete", verifyUserToken, deleteListing);
+route.post("/update/:id", verifyUserToken, updateListing);
+route.delete("/delete/:id", verifyUserToken, deleteListing);
 
 export default route;
