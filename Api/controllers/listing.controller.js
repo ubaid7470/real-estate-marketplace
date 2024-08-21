@@ -10,7 +10,32 @@ export const createListing = async (req, res, next) => {
   }
 };
 
-export const updateListing = async () => {};
+export const updateListing = async (req, res, next) => {
+  const listing = await Listing.findById(req.params.id);
+
+  if (!listing) {
+    return res.status(404).json({ message: "Listing not found" });
+  }
+
+  if (listing.userRef !== req.user.id) {
+    return next(
+      errorHandler(401, "You are not authorized to update this Listing!")
+    );
+  }
+
+  try {
+    const listingUpdated = await Listing.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+      }
+    );
+    res.status(200).json(listingUpdated);
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const deleteListing = async (req, res, next) => {
   const listing = await Listing.findById(req.params.id);
